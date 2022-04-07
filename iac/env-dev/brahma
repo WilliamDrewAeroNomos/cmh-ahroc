@@ -1,0 +1,46 @@
+#!/bin/bash
+
+cd network
+
+echo "Creating network resources..."
+
+terraform apply -var-file=terraform.tfvars -auto-approve
+
+cd ../persistence/es
+
+sleep 5
+
+echo "Creating OpenSearch resources..."
+
+terraform apply -var-file=terraform.tfvars -auto-approve
+
+cd ../mongodb
+
+sleep 5
+
+echo "Creating MongoDB resources..."
+
+terraform apply -var-file=terraform.tfvars -auto-approve
+
+cd ../../application
+
+sleep 5
+
+echo "Creating application resources..."
+
+terraform apply -var-file=terraform.tfvars -auto-approve
+
+cd ../lambdas/s3
+
+echo "Creating lambda resources..."
+
+sleep 5
+
+terraform apply -var-file=terraform.tfvars -auto-approve
+
+cd ../container
+
+sleep 5
+
+terraform apply -var-file=terraform.tfvars -auto-approve
+

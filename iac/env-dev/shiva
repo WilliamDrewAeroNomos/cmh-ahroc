@@ -1,0 +1,35 @@
+#!/bin/bash
+
+cd application
+
+echo "Destroying application resources..."
+terraform destroy -var-file=terraform.tfvars -auto-approve
+
+cd ../lambdas/s3
+
+sleep 5
+echo "Destroying lambdas..."
+
+terraform destroy -var-file=terraform.tfvars -auto-approve
+cd ../container
+terraform destroy -var-file=terraform.tfvars -auto-approve
+
+cd ../../persistence/es
+
+sleep 5
+echo "Destroying OpenSearch resources..."
+terraform destroy -var-file=terraform.tfvars -auto-approve
+
+cd ../mongodb
+
+sleep 5
+echo "Destroying MongoDB resources..."
+terraform destroy -var-file=terraform.tfvars -auto-approve
+
+cd ../../network
+
+sleep 5
+echo "Destroying network resources..."
+terraform destroy -var-file=terraform.tfvars -auto-approve
+
+
