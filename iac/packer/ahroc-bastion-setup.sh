@@ -25,3 +25,14 @@ sudo yum -y install terraform
 echo "Install Packer..."
 
 sudo yum -y install packer
+
+#echo "Clone down code repository..."
+
+# git clone https://git-codecommit.us-gov-west-1.amazonaws.com/v1/repos/cmh-ahroc
+
+echo "Install AWS CLI..."
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
