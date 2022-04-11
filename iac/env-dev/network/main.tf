@@ -34,6 +34,23 @@ resource "aws_accessanalyzer_analyzer" "access_analyzer" {
   analyzer_name = "AHROC"
 }
 
+#---------------------------
+# VPC
+#---------------------------
+
+resource "aws_vpc" "main" {
+  cidr_block           = "${var._cidr_block}"
+  instance_tenancy     = "default"
+  enable_dns_support   = "true"
+  enable_dns_hostnames = "true"
+  enable_classiclink   = "false"
+
+  tags = {
+    Name = "${var._name}"
+  }
+}
+
+/*
 module "ahroc_main_vpc" {
 
   #source = "git::https://github.com/WilliamDrewAeroNomos/tf-modules.git//modules/vpc?ref=v2.0.0"
@@ -45,6 +62,7 @@ module "ahroc_main_vpc" {
   _name       = var.VPC_NAME
 
 }
+*/
 
 # Public Subnets
 
