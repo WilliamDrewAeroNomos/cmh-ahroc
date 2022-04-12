@@ -39,37 +39,23 @@ resource "aws_accessanalyzer_analyzer" "access_analyzer" {
 #---------------------------
 
 resource "aws_vpc" "main" {
-  cidr_block           = "${var._cidr_block}"
+  cidr_block           = "${var.CIDR_BLOCK}"
   instance_tenancy     = "default"
   enable_dns_support   = "true"
   enable_dns_hostnames = "true"
   enable_classiclink   = "false"
 
   tags = {
-    Name = "${var._name}"
+    Name = "${var.VPC_NAME}"
   }
 }
-
-/*
-module "ahroc_main_vpc" {
-
-  #source = "git::https://github.com/WilliamDrewAeroNomos/tf-modules.git//modules/vpc?ref=v2.0.0"
-  source = "../../../tf-modules/modules/vpc"
-
-  # insert required variables here
-
-  _cidr_block = var.CIDR_BLOCK
-  _name       = var.VPC_NAME
-
-}
-*/
 
 # Public Subnets
 
 resource "aws_subnet" "public_subnets" {
   count                   = 3
-  vpc_id                  = module.ahroc_main_vpc.vpc-main-id
-  cidr_block              = cidrsubnet(module.ahroc_main_vpc.vpc-cidr-block, 8, count.index)
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
   map_public_ip_on_launch = "true"
   availability_zone       = data.aws_availability_zones.available.names[count.index]
 
@@ -82,9 +68,9 @@ resource "aws_subnet" "public_subnets" {
 
 resource "aws_subnet" "private_subnets" {
   count             = 3
-  vpc_id            = module.ahroc_main_vpc.vpc-main-id
+  vpc_id            = aws_vpc.main.id
   availability_zone = data.aws_availability_zones.available.names[count.index + 3]
-  cidr_block        = cidrsubnet(module.ahroc_main_vpc.vpc-cidr-block, 8, count.index + 4)
+  cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index + 4)
 
   tags = {
     Name = "${var.ENVIRONMENT}_private_subnet_${data.aws_availability_zones.available.names[count.index]}"
@@ -95,7 +81,7 @@ resource "aws_subnet" "private_subnets" {
 # Internet Gateway
 
 resource "aws_internet_gateway" "igw_main" {
-  vpc_id = module.ahroc_main_vpc.vpc-main-id
+  vpc_id = aws_vpc.main.id
 
   tags = {
     Name = "${var.ENVIRONMENT}-igw"
@@ -105,7 +91,7 @@ resource "aws_internet_gateway" "igw_main" {
 # Public route table
 
 resource "aws_route_table" "public_route_table" {
-  vpc_id = module.ahroc_main_vpc.vpc-main-id
+  vpc_id = aws_vpc.main.id
 
   tags = {
     Name = "${var.ENVIRONMENT}-public_route_table"
@@ -131,7 +117,7 @@ resource "aws_route_table_association" "public_route_table_association" {
 # Associating private route table with private subnets
 
 resource "aws_route_table" "private_route_table" {
-  vpc_id = module.ahroc_main_vpc.vpc-main-id
+  vpc_id = aws_vpc.main.id
 
   tags = {
     Name = "${var.VPC_NAME}_Private_Route_Table"
@@ -148,8 +134,8 @@ resource "aws_route_table_association" "private_route_table_association" {
 
 resource "aws_subnet" "nated_subnets" {
   count             = 3
-  vpc_id            = module.ahroc_main_vpc.vpc-main-id
-  cidr_block        = cidrsubnet(module.ahroc_main_vpc.vpc-cidr-block, 8, count.index + 8)
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index + 8)
   availability_zone = data.aws_availability_zones.available.names[count.index + length(aws_subnet.public_subnets)]
 
   tags = {
@@ -176,7 +162,7 @@ resource "aws_nat_gateway" "nat_gateways" {
 
 resource "aws_route_table" "nated_route_tables" {
   count  = 3
-  vpc_id = module.ahroc_main_vpc.vpc-main-id
+  vpc_id = aws_vpc.main.id
 
   route {
     cidr_block     = "0.0.0.0/0"
@@ -200,7 +186,7 @@ resource "aws_route_table_association" "nated_route_table_associations" {
 
 resource "aws_security_group" "nat_sg" {
   name   = "nat_instance_security_group"
-  vpc_id = module.ahroc_main_vpc.vpc-main-id
+  vpc_id = aws_vpc.main.id
 
   ingress {
     from_port   = 80
@@ -242,28 +228,5 @@ resource "aws_security_group" "nat_sg" {
   }
 }
 
-# Move this to persistence/mongodb
-
-#resource "aws_route" "private_route" {
-#  route_table_id         = aws_route_table.private_route_table.id
-#  destination_cidr_block = "0.0.0.0/0"
-#  instance_id            = aws_instance.nat_instance.id
-#}
-
-#resource "aws_instance" "nat_instance" {
-#
-#  ami                         = data.aws_ami.nat_instance_ami.id
-#  instance_type               = "t2.micro"
-#  source_dest_check           = false
-#  associate_public_ip_address = true
-#  key_name                    = var.key_name
-#  subnet_id                   = element(aws_subnet.public_subnets.*.id, 0)
-#  vpc_security_group_ids      = ["${aws_security_group.nat_sg.id}"]
-
-#  tags = {
-#    Name = "${var.vpc_name}_NAT_Instance"
-#  }
-#
-#}
 
 
