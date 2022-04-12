@@ -39,4 +39,7 @@ aws --version
 
 echo "Add aliases for Terraform commands..."
 
-echo "alias tf='terraform'" >> .bash_profile
+echo "alias tf='terraform'" >> ~/.bash_profile
+echo "alias tf_apply='tf apply -var-file=terraform.tfvars'" >> ~/.bash_profile
+echo "alias tf_destroy='tf destroy -var-file=terraform.tfvars'" >> ~/.bash_profile
+echo "alias tf_plan='tf plan -var-file=terraform.tfvars'" >> ~/.bash_profile
