@@ -3,26 +3,14 @@ echo "Executing base image setup"
 
 echo "Update the image to the latest patches"
 
-sudo yum install epel-release -y
 sudo yum update -y
 
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+sudo amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
 
-. ~/.nvm/nvm.sh
+cat /etc/system-release
 
-nvm install node
+sudo yum install -y httpd
 
-node -e "console.log('Running Node.js ' + process.version)"
+sudo systemctl start httpd
 
-sudo yum install git -y
-
-git clone https://github.com/WilliamDrewAeroNomos/test-node-app.git
-
-cd test-node-app
- 
-npm install
- 
-npm install pm2 -g
-
-pm2 start index.js
- 
+sudo systemctl enable httpd
